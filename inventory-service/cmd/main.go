@@ -6,6 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/controller"
+	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/db"
+	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/repository"
+	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/usecase"
 )
 
 func main() {
@@ -15,10 +19,21 @@ func main() {
 		log.Fatal("Não foi possível carregar o .env")
 	}
 
-	// dbConnection, err := db.ConnectDB()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	dbConnection, err := db.ConnectDB()
+	if err != nil {
+		panic(err)
+	}
+
+	//Camada de repository
+	ProductRepository := repository.NewProductRepository(dbConnection)
+
+	//Camada usecase
+	ProductUseCase := usecase.NewProductUseCase(ProductRepository)
+
+	//Camada de controllers
+	ProductController := controller.NewProductController(ProductUseCase)
+
+	server.POST("/product", ProductController.CreateProductController)
 
 	server.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -26,5 +41,5 @@ func main() {
 		})
 	})
 
-	server.Run()
+	server.Run(":8080")
 }
