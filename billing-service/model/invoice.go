@@ -1,4 +1,4 @@
-package models
+package model
 
 type InvoiceStatus string
 
@@ -9,7 +9,7 @@ const (
 
 type Invoice struct {
 	ID     int           `json:"id"`
-	Number string        `json:"number"`
+	Number int           `json:"number"`
 	Status InvoiceStatus `json:"status"`
 	Items  []InvoiceItem `json:"items"`
 }
