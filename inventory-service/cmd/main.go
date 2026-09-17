@@ -9,6 +9,7 @@ import (
 	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/controller"
 	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/db"
 	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/repository"
+	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/routes"
 	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/usecase"
 )
 
@@ -30,12 +31,9 @@ func main() {
 	//Camada usecase
 	ProductUseCase := usecase.NewProductUseCase(ProductRepository)
 
-	//Camada de controllers
-	ProductController := controller.NewProductController(ProductUseCase)
+	productController := controller.NewProductController(ProductUseCase)
 
-	server.POST("/product", ProductController.CreateProductController)
-	server.GET("/product", ProductController.GetProductController)
-	server.GET("/product/:codeProduct", ProductController.GetProductByCodeController)
+	routes.RegisterProductRoutes(server, &productController)
 
 	server.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
