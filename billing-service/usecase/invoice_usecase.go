@@ -17,6 +17,7 @@ func NewInvoiceUseCase(repo repository.InvoiceRepository) InvoiceUseCase {
 		repository: repo,
 	}
 }
+
 func (iuc *InvoiceUseCase) CreateInvoiceUseCase(invoice model.Invoice) (model.Invoice, error) {
 	if len(invoice.Items) == 0 {
 		return model.Invoice{}, errors.New("invoice must have at least one item")
