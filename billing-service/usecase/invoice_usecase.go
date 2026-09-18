@@ -37,3 +37,7 @@ func (iuc *InvoiceUseCase) CreateInvoiceUseCase(invoice model.Invoice) (model.In
 	}
 	return iuc.repository.CreateInvoiceRepository(invoice)
 }
+
+func (iuc *InvoiceUseCase) GetAllInvoicesUseCase() ([]model.Invoice, error) {
+	return iuc.repository.GetAllInvoicesRepository()
+}
