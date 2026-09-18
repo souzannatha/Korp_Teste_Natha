@@ -12,4 +12,5 @@ func RegisterInvoiceRoutes(
 	invoices := server.Group("/invoice")
 
 	invoices.POST("", ic.CreateInvoiceController)
+	invoices.GET("", ic.GetAllInvoicesController)
 }

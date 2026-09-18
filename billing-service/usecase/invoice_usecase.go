@@ -12,6 +12,12 @@ type InvoiceUseCase struct {
 	repository repository.InvoiceRepository
 }
 
+var (
+	ErrInvoiceWithoutItems = errors.New("invoice must have at least one item")
+	ErrProductCodeRequired = errors.New("product code is required")
+	ErrInvalidQuantity     = errors.New("quantity must be greater than zero")
+)
+
 func NewInvoiceUseCase(repo repository.InvoiceRepository) InvoiceUseCase {
 	return InvoiceUseCase{
 		repository: repo,
@@ -20,7 +26,7 @@ func NewInvoiceUseCase(repo repository.InvoiceRepository) InvoiceUseCase {
 
 func (iuc *InvoiceUseCase) CreateInvoiceUseCase(invoice model.Invoice) (model.Invoice, error) {
 	if len(invoice.Items) == 0 {
-		return model.Invoice{}, errors.New("invoice must have at least one item")
+		return model.Invoice{}, ErrInvoiceWithoutItems
 	}
 
 	for i := range invoice.Items {
@@ -28,11 +34,11 @@ func (iuc *InvoiceUseCase) CreateInvoiceUseCase(invoice model.Invoice) (model.In
 		item.ProductCode = strings.TrimSpace(item.ProductCode)
 
 		if item.ProductCode == "" {
-			return model.Invoice{}, errors.New("product code is required")
+			return model.Invoice{}, ErrProductCodeRequired
 		}
 
 		if item.Quantity <= 0 {
-			return model.Invoice{}, errors.New("quantity must be greater than zero")
+			return model.Invoice{}, ErrInvalidQuantity
 		}
 	}
 	return iuc.repository.CreateInvoiceRepository(invoice)

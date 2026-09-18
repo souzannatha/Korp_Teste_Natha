@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,19 +22,47 @@ func NewInvoiceController(usecase usecase.InvoiceUseCase) InvoiceController {
 func (ic *InvoiceController) CreateInvoiceController(ctx *gin.Context) {
 	var invoice model.Invoice
 
-	err := ctx.BindJSON(&invoice)
+	err := ctx.ShouldBindJSON(&invoice)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		response := model.Response{
+			Message: "invalid request body",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	insertedInvoice, err := ic.invoiceUseCase.CreateInvoiceUseCase(invoice)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		if errors.Is(err, usecase.ErrInvoiceWithoutItems) ||
+			errors.Is(err, usecase.ErrProductCodeRequired) ||
+			errors.Is(err, usecase.ErrInvalidQuantity) {
+			response := model.Response{
+				Message: err.Error(),
+			}
+			ctx.JSON(http.StatusBadRequest, response)
+			return
+		}
+
+		response := model.Response{
+			Message: "could not create invoice",
+		}
+		ctx.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, insertedInvoice)
+}
+
+func (ic *InvoiceController) GetAllInvoicesController(ctx *gin.Context) {
+	invoices, err := ic.invoiceUseCase.GetAllInvoicesUseCase()
+	if err != nil {
+		response := model.Response{
+			Message: "could not retrieve invoices",
+		}
+		ctx.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	ctx.JSON(http.StatusOK, invoices)
 }
