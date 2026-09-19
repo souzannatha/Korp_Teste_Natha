@@ -1,0 +1,203 @@
+openapi: 3.0.3
+info:
+  title: Inventory API
+  version: 1.0.0
+  description: Product management and transactional, idempotent stock deductions.
+servers:
+  - url: /
+paths:
+  /ping:
+    get:
+      summary: Check service availability
+      responses:
+        '200':
+          description: Service running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: pong
+  /product:
+    post:
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProduct'
+            example:
+              code: '001'
+              description: Teclado mecânico
+              balance: 10
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    get:
+      summary: List products
+      responses:
+        '200':
+          description: Product list; an empty list is returned as []
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /product/{codeProduct}:
+    get:
+      summary: Find a product by its user-entered code
+      parameters:
+        - name: codeProduct
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 50
+          example: '001'
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /stock-deductions:
+    post:
+      summary: Deduct stock for an invoice
+      description: All items are deducted atomically. Repeating the same invoice and normalized items succeeds without another deduction. Different items for an already processed invoice return 409.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockDeduction'
+            example:
+              invoice_id: 1
+              items:
+                - product_code: '001'
+                  quantity: 3
+      responses:
+        '200':
+          description: Stock deducted, or the same operation was previously completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: stock deducted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    CreateProduct:
+      type: object
+      required: [code, description, balance]
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '\S'
+        description:
+          type: string
+          minLength: 1
+          pattern: '\S'
+        balance:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+    Product:
+      allOf:
+        - $ref: '#/components/schemas/CreateProduct'
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: integer
+              minimum: 1
+              readOnly: true
+    StockDeduction:
+      type: object
+      required: [invoice_id, items]
+      properties:
+        invoice_id:
+          type: integer
+          format: int64
+          minimum: 1
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [product_code, quantity]
+            properties:
+              product_code:
+                type: string
+                minLength: 1
+                maxLength: 50
+                pattern: '\S'
+              quantity:
+                type: integer
+                minimum: 1
+                maximum: 2147483647
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: invalid request body
+  responses:
+    BadRequest:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Conflict with current state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
