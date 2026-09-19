@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/controller"
+	"github.com/souzannatha/Korp_Teste_Natha/inventory-service/internal/controller"
 )
 
 func RegisterProductRoutes(
