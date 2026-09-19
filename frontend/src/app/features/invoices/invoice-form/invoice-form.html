@@ -1,0 +1,86 @@
+<section class="page-heading">
+  <div>
+    <h1>Nova nota fiscal</h1>
+    <p>Inclua um ou mais produtos. A numeração e o status são gerados automaticamente.</p>
+  </div>
+</section>
+
+<mat-card>
+  <mat-card-content>
+    @if (loadingProducts()) {
+      <div class="state-message">
+        <mat-spinner diameter="36" />
+        <span>Carregando produtos...</span>
+      </div>
+    } @else if (products().length === 0) {
+      <div class="state-message empty-products">
+        <span>Cadastre ao menos um produto antes de criar uma nota.</span>
+        <a mat-flat-button routerLink="/products/new">Cadastrar produto</a>
+      </div>
+    } @else {
+      <form [formGroup]="invoiceForm" (ngSubmit)="save()">
+        <div formArrayName="items" class="items-list">
+          @for (item of items.controls; track item; let index = $index) {
+            <section class="item-row" [formGroupName]="index">
+              <div class="item-number">Item {{ index + 1 }}</div>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Produto</mat-label>
+                <mat-select formControlName="product_code">
+                  @for (product of products(); track product.id) {
+                    <mat-option [value]="product.code">
+                      {{ product.code }} - {{ product.description }} (saldo: {{ product.balance }})
+                    </mat-option>
+                  }
+                </mat-select>
+                @if (item.controls.product_code.hasError('required')) {
+                  <mat-error>Selecione o produto.</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Quantidade</mat-label>
+                <input matInput type="number" min="1" step="1" formControlName="quantity" />
+                @if (item.controls.quantity.invalid) {
+                  <mat-error>Informe uma quantidade inteira positiva.</mat-error>
+                }
+                @if (productBalance(item.controls.product_code.value) !== null) {
+                  <mat-hint
+                    >Saldo atual: {{ productBalance(item.controls.product_code.value) }}</mat-hint
+                  >
+                }
+              </mat-form-field>
+
+              <button
+                mat-button
+                type="button"
+                (click)="removeItem(index)"
+                [disabled]="items.length === 1"
+                matTooltip="A nota precisa ter ao menos um item"
+              >
+                Remover
+              </button>
+            </section>
+            @if (!$last) {
+              <mat-divider />
+            }
+          }
+        </div>
+
+        <button mat-stroked-button type="button" (click)="addItem()">Adicionar produto</button>
+
+        <div class="form-actions">
+          <a mat-button routerLink="/invoices">Cancelar</a>
+          <button mat-flat-button type="submit" [disabled]="saving()">
+            @if (saving()) {
+              <mat-spinner diameter="20" />
+              Criando nota...
+            } @else {
+              Criar nota fiscal
+            }
+          </button>
+        </div>
+      </form>
+    }
+  </mat-card-content>
+</mat-card>

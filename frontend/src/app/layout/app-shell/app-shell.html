@@ -1,0 +1,11 @@
+<mat-toolbar class="app-toolbar no-print">
+  <a class="brand" routerLink="/invoices">Korp Notas</a>
+  <nav aria-label="Navegação principal">
+    <a mat-button routerLink="/products" routerLinkActive="active-link">Produtos</a>
+    <a mat-button routerLink="/invoices" routerLinkActive="active-link">Notas fiscais</a>
+  </nav>
+</mat-toolbar>
+
+<main class="page-container">
+  <router-outlet />
+</main>

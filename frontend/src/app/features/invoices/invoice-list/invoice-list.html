@@ -1,0 +1,60 @@
+<section class="page-heading">
+  <div>
+    <h1>Notas fiscais</h1>
+    <p>Acompanhe as notas abertas e fechadas.</p>
+  </div>
+  <a mat-flat-button routerLink="/invoices/new">Nova nota</a>
+</section>
+
+<mat-card>
+  <mat-card-content>
+    @if (loading()) {
+      <div class="state-message">
+        <mat-spinner diameter="36" />
+        <span>Carregando notas...</span>
+      </div>
+    } @else if (invoices().length === 0) {
+      <div class="state-message">Nenhuma nota fiscal cadastrada.</div>
+    } @else {
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="invoices()">
+          <ng-container matColumnDef="number">
+            <th mat-header-cell *matHeaderCellDef>Número</th>
+            <td mat-cell *matCellDef="let invoice">{{ invoice.number }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let invoice">
+              <mat-chip-set>
+                <mat-chip
+                  [class.status-open]="invoice.status === 'open'"
+                  [class.status-closed]="invoice.status === 'closed'"
+                >
+                  {{ statusLabel(invoice.status) }}
+                </mat-chip>
+              </mat-chip-set>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="items">
+            <th mat-header-cell *matHeaderCellDef>Itens</th>
+            <td mat-cell *matCellDef="let invoice">{{ invoice.items.length }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Ações</th>
+            <td mat-cell *matCellDef="let invoice">
+              <a mat-button [routerLink]="['/invoices', invoice.id]">
+                {{ invoice.status === 'open' ? 'Ver e imprimir' : 'Ver nota' }}
+              </a>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

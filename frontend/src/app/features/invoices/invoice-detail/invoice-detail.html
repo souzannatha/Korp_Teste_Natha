@@ -1,0 +1,80 @@
+<div class="no-print">
+  <section class="page-heading">
+    <div>
+      <h1>Detalhes da nota</h1>
+      <p>Confira os itens antes de finalizar a impressão.</p>
+    </div>
+    <a mat-button routerLink="/invoices">Voltar</a>
+  </section>
+</div>
+
+@if (loading()) {
+  <div class="state-message no-print">
+    <mat-spinner diameter="36" />
+    <span>Carregando nota...</span>
+  </div>
+} @else if (invoice(); as invoice) {
+  <mat-card class="print-area">
+    <mat-card-header>
+      <mat-card-title>Nota fiscal nº {{ invoice.number }}</mat-card-title>
+      <mat-card-subtitle>ID interno: {{ invoice.id }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <section class="invoice-summary">
+        <div>
+          <span class="summary-label">Status</span>
+          <mat-chip-set>
+            <mat-chip
+              [class.status-open]="invoice.status === 'open'"
+              [class.status-closed]="invoice.status === 'closed'"
+            >
+              {{ statusLabel(invoice.status) }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+        <div>
+          <span class="summary-label">Quantidade de itens</span>
+          <strong>{{ invoice.items.length }}</strong>
+        </div>
+      </section>
+
+      <mat-divider />
+
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="invoice.items">
+          <ng-container matColumnDef="product">
+            <th mat-header-cell *matHeaderCellDef>Código do produto</th>
+            <td mat-cell *matCellDef="let item">{{ item.product_code }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="quantity">
+            <th mat-header-cell *matHeaderCellDef>Quantidade</th>
+            <td mat-cell *matCellDef="let item">{{ item.quantity }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end" class="no-print">
+      <button
+        mat-flat-button
+        type="button"
+        (click)="print()"
+        [disabled]="invoice.status !== 'open' || printing()"
+      >
+        @if (printing()) {
+          <mat-spinner diameter="20" />
+          Processando...
+        } @else if (invoice.status === 'closed') {
+          Nota fechada
+        } @else {
+          Imprimir nota
+        }
+      </button>
+    </mat-card-actions>
+  </mat-card>
+}

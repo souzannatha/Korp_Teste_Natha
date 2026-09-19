@@ -1,0 +1,57 @@
+@use '../../../shared/page';
+
+.print-area {
+  margin: 0 auto;
+  max-width: 820px;
+}
+
+.invoice-summary {
+  display: flex;
+  gap: 48px;
+  margin: 28px 0;
+}
+
+.invoice-summary > div {
+  display: grid;
+  gap: 8px;
+}
+
+.summary-label {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.85rem;
+}
+
+.table-wrapper {
+  margin-top: 20px;
+}
+
+mat-card-actions button {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.status-open {
+  --mdc-chip-elevated-container-color: #e8f5e9;
+  --mdc-chip-label-text-color: #1b5e20;
+}
+
+.status-closed {
+  --mdc-chip-elevated-container-color: #eceff1;
+  --mdc-chip-label-text-color: #37474f;
+}
+
+@media (max-width: 600px) {
+  .invoice-summary {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+@media print {
+  .print-area {
+    box-shadow: none;
+    max-width: none;
+  }
+}
